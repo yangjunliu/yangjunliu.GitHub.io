@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://yangjunliu.github.io</id>
     <title>YangjunLiu</title>
-    <updated>2021-04-24T06:45:09.512Z</updated>
+    <updated>2021-04-24T12:21:54.469Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://yangjunliu.github.io"/>
     <link rel="self" href="https://yangjunliu.github.io/atom.xml"/>
@@ -10,6 +10,461 @@
     <logo>https://yangjunliu.github.io/images/avatar.png</logo>
     <icon>https://yangjunliu.github.io/favicon.ico</icon>
     <rights>All rights reserved 2021, YangjunLiu</rights>
+    <entry>
+        <title type="html"><![CDATA[elasticsearch 聚合（aggs）]]></title>
+        <id>https://yangjunliu.github.io/post/elasticsearch-ju-he-aggs/</id>
+        <link href="https://yangjunliu.github.io/post/elasticsearch-ju-he-aggs/">
+        </link>
+        <updated>2021-04-24T08:42:25.000Z</updated>
+        <content type="html"><![CDATA[<p><strong>单值输出</strong></p>
+<ul>
+<li>sum 求和</li>
+</ul>
+<pre><code># 类似sql select sum(field) frome table
+GET /nginx-access-*/_search
+{
+  &quot;size&quot;: 0, 
+  &quot;aggs&quot;: {
+    &quot;sum_offset&quot;: {
+      &quot;sum&quot;: {
+        &quot;field&quot;: &quot;log.offset&quot;
+      }
+    }
+  }
+}
+</code></pre>
+<ul>
+<li>avg 平均值</li>
+</ul>
+<pre><code># 类似sql select avg(field) frome table
+GET /nginx-access-*/_search
+{
+  &quot;size&quot;: 0, 
+  &quot;aggs&quot;: {
+    &quot;avg_offset&quot;: {
+      &quot;avg&quot;: {
+        &quot;field&quot;: &quot;log.offset&quot;
+      }
+    }
+  }
+}
+</code></pre>
+<ul>
+<li>max 最大值</li>
+</ul>
+<pre><code># 类似sql select max(field) frome table
+GET /nginx-access-*/_search
+{
+  &quot;size&quot;: 0,
+  &quot;aggs&quot;: {
+    &quot;field_max&quot;: {
+      &quot;max&quot;: {
+        &quot;field&quot;: &quot;log.offset&quot;
+      }
+    }
+  }
+}
+</code></pre>
+<ul>
+<li>min 最大值</li>
+</ul>
+<pre><code>  # 类似sql select min(field) frome table
+GET /nginx-access-*/_search
+{
+  &quot;size&quot;: 0,
+  &quot;aggs&quot;: {
+    &quot;field_min&quot;: {
+      &quot;min&quot;: {
+        &quot;field&quot;: &quot;log.offset&quot;
+      }
+    }
+  }
+}
+</code></pre>
+<ul>
+<li>cardinality 去重求和</li>
+</ul>
+<pre><code># 类似sql select count(distinct(field)) from table
+# 字段不能是text类型
+GET /nginx-access-*/_search
+{
+  &quot;size&quot;: 0, 
+  &quot;aggs&quot;: {
+    &quot;distinct_count&quot;: {
+      &quot;cardinality&quot;: {
+        &quot;field&quot;: &quot;source.as.number&quot;
+      }
+    }
+  }
+}
+</code></pre>
+<p><strong>多值输出</strong></p>
+<ul>
+<li>stats 计算count,min,max,avg,sum</li>
+</ul>
+<pre><code># 注 字段类型必须是数值类型 integer，float等
+GET /nginx-access-*/_search
+{
+  &quot;size&quot;: 0, 
+  &quot;aggs&quot;: {
+    &quot;num_info&quot;: {
+      &quot;stats&quot;: {
+        &quot;field&quot;: &quot;source.as.number&quot;
+      }
+    }
+  }
+}
+</code></pre>
+<pre><code>{
+  &quot;took&quot; : 38,
+  &quot;timed_out&quot; : false,
+  &quot;_shards&quot; : {
+    &quot;total&quot; : 95,
+    &quot;successful&quot; : 95,
+    &quot;skipped&quot; : 0,
+    &quot;failed&quot; : 0
+  },
+  &quot;hits&quot; : {
+    &quot;total&quot; : {
+      &quot;value&quot; : 10000,
+      &quot;relation&quot; : &quot;gte&quot;
+    },
+    &quot;max_score&quot; : null,
+    &quot;hits&quot; : [ ]
+  },
+  &quot;aggregations&quot; : {
+    &quot;num_info&quot; : {
+      &quot;count&quot; : 71263,
+      &quot;min&quot; : 25.0,
+      &quot;max&quot; : 397539.0,
+      &quot;avg&quot; : 20274.266379467605,
+      &quot;sum&quot; : 1.444805045E9
+    }
+  }
+}
+</code></pre>
+<ul>
+<li>terms 字段分组之后count</li>
+</ul>
+<pre><code># 类似sql select count(*) from tabel grep by field
+# 字段不能是text类型
+GET /nginx-access-*/_search
+{
+  &quot;size&quot;: 0, 
+  &quot;aggs&quot;: {
+    &quot;num_info&quot;: {
+      &quot;terms&quot;: {
+        &quot;field&quot;: &quot;source.as.number&quot;
+      }
+    }
+  }
+}
+</code></pre>
+<ul>
+<li>terms 嵌套</li>
+</ul>
+<pre><code>GET /nginx-access-*/_search
+{
+  &quot;size&quot;: 0, 
+  &quot;aggs&quot;: {
+    &quot;num_info&quot;: {
+      &quot;terms&quot;: {
+        &quot;field&quot;: &quot;source.as.number&quot;
+      },
+      &quot;aggs&quot;: {
+        &quot;host_name_info&quot;: {
+          &quot;terms&quot;: {
+            &quot;field&quot;: &quot;process.properties.pid&quot;
+          }
+        }
+      }
+    }
+  }
+}
+</code></pre>
+<pre><code>GET /nginx-access-*/_search
+{
+  &quot;size&quot;: 0, 
+  &quot;aggs&quot;: {
+    &quot;num_info&quot;: {
+      &quot;terms&quot;: {
+        &quot;field&quot;: &quot;source.as.number&quot;
+      },
+      &quot;aggs&quot;: {
+        &quot;host_name_info&quot;: {
+          &quot;stats&quot;: {
+            &quot;field&quot;: &quot;source.as.number&quot;
+          }
+        }
+      }
+    }
+  }
+}
+</code></pre>
+<ul>
+<li>top_hits 查出最上面的两条数据</li>
+</ul>
+<pre><code># 类似sql select * from table order by field limit 1
+GET /nginx-access-*/_search
+{
+  &quot;size&quot;: 0, 
+  &quot;aggs&quot;: {
+    &quot;number_top_two&quot;: {
+      &quot;top_hits&quot;: {
+        &quot;_source&quot;: [&quot;agent&quot;], 
+        &quot;size&quot;: 1, 
+        &quot;sort&quot;: [
+          {
+            &quot;source.as.number&quot;: {
+              &quot;order&quot;: &quot;desc&quot;
+            }
+          }
+        ]
+      }
+    }
+  }
+}
+</code></pre>
+<pre><code># 另外一种方式
+GET /nginx-access-*/_search
+{
+  &quot;_source&quot;: [&quot;source&quot;], 
+  &quot;query&quot;: {
+    &quot;match_all&quot;: {}
+  },
+  &quot;sort&quot;: [
+    {
+      &quot;source.as.number&quot;: {
+        &quot;order&quot;: &quot;desc&quot;
+      }
+    }
+  ],
+  &quot;size&quot;: 1
+}
+</code></pre>
+<ul>
+<li>range 把查询的结果按范围分组，然后count</li>
+</ul>
+<pre><code># 范围是开区间
+GET /nginx-access-*/_search
+{
+  &quot;size&quot;: 0,
+  &quot;aggs&quot;: {
+    &quot;ranges_number_info&quot;: {
+      &quot;range&quot;: {
+        &quot;field&quot;: &quot;source.as.number&quot;,
+        &quot;ranges&quot;: [
+          {
+            &quot;key&quot;: &quot;0&lt;=number&lt;200001&quot;, 
+            &quot;to&quot;: 200001
+          },
+          {
+            &quot;key&quot;: &quot;200001&lt;=number&lt;400001&quot;, 
+            &quot;to&quot;: 400001,
+            &quot;from&quot;: 200001
+          }
+        ]
+      }
+    }
+  }
+}
+</code></pre>
+<ul>
+<li>histogram 以直方图的方式查询结果</li>
+</ul>
+<pre><code># 注 field：字段名字，interval：间隔
+#    extended_bounds：区间内没有数据用0填充
+GET /nginx-access-*/_search
+{
+  &quot;size&quot;: 0,
+  &quot;aggs&quot;: {
+    &quot;ranges_number_info&quot;: {
+      &quot;histogram&quot;: {
+        &quot;field&quot;: &quot;source.as.number&quot;,
+        &quot;interval&quot;: 100000,
+        &quot;extended_bounds&quot;: {
+          &quot;min&quot;: 0,
+          &quot;max&quot;: 500000
+        }
+      }
+    }
+  }
+}
+</code></pre>
+<pre><code># 查询结果
+{
+  &quot;took&quot; : 57,
+  &quot;timed_out&quot; : false,
+  &quot;_shards&quot; : {
+    &quot;total&quot; : 95,
+    &quot;successful&quot; : 95,
+    &quot;skipped&quot; : 0,
+    &quot;failed&quot; : 0
+  },
+  &quot;hits&quot; : {
+    &quot;total&quot; : {
+      &quot;value&quot; : 10000,
+      &quot;relation&quot; : &quot;gte&quot;
+    },
+    &quot;max_score&quot; : null,
+    &quot;hits&quot; : [ ]
+  },
+  &quot;aggregations&quot; : {
+    &quot;ranges_number_info&quot; : {
+      &quot;buckets&quot; : [
+        {
+          &quot;key&quot; : 0.0,
+          &quot;doc_count&quot; : 69814
+        },
+        {
+          &quot;key&quot; : 100000.0,
+          &quot;doc_count&quot; : 503
+        },
+        {
+          &quot;key&quot; : 200000.0,
+          &quot;doc_count&quot; : 932
+        },
+        {
+          &quot;key&quot; : 300000.0,
+          &quot;doc_count&quot; : 39
+        },
+        {
+          &quot;key&quot; : 400000.0,
+          &quot;doc_count&quot; : 0
+        },
+        {
+          &quot;key&quot; : 500000.0,
+          &quot;doc_count&quot; : 0
+        }
+      ]
+    }
+  }
+}
+</code></pre>
+<ul>
+<li>筛选后聚合</li>
+</ul>
+<pre><code>GET /nginx-access-*/_search
+{
+  &quot;query&quot;: {
+    &quot;range&quot;: {
+      &quot;source.as.number&quot;: {
+        &quot;gt&quot;: 100000
+      }
+    }
+  },
+  &quot;aggs&quot;: {
+    &quot;avg_number&quot;: {
+      &quot;avg&quot;: {
+        &quot;field&quot;: &quot;source.as.number&quot;
+      }
+    }
+  },
+  &quot;size&quot;: 0
+}
+</code></pre>
+<pre><code># 结果
+{
+  &quot;took&quot; : 200,
+  &quot;timed_out&quot; : false,
+  &quot;_shards&quot; : {
+    &quot;total&quot; : 95,
+    &quot;successful&quot; : 95,
+    &quot;skipped&quot; : 0,
+    &quot;failed&quot; : 0
+  },
+  &quot;hits&quot; : {
+    &quot;total&quot; : {
+      &quot;value&quot; : 1474,
+      &quot;relation&quot; : &quot;eq&quot;
+    },
+    &quot;max_score&quot; : null,
+    &quot;hits&quot; : [ ]
+  },
+  &quot;aggregations&quot; : {
+    &quot;avg_number&quot; : {
+      &quot;value&quot; : 188359.7435549525
+    }
+  }
+}
+</code></pre>
+<ul>
+<li>使用filter过滤查询，然后聚合</li>
+</ul>
+<pre><code># constant_score 忽略文档排名分数
+GET /nginx-access-*/_search
+{
+  &quot;size&quot;: 0, 
+  &quot;query&quot;: {
+    &quot;constant_score&quot;: {
+      &quot;filter&quot;: {
+        &quot;term&quot;: {
+          &quot;source.geo.city_name&quot;: &quot;shanghai&quot;
+        }
+      }
+    }
+  },
+  &quot;aggs&quot;: {
+    &quot;avg_number&quot;: {
+      &quot;avg&quot;: {
+        &quot;field&quot;: &quot;source.as.number&quot;
+      }
+    }
+  }
+}
+</code></pre>
+<pre><code># 结果
+{
+  &quot;took&quot; : 90,
+  &quot;timed_out&quot; : false,
+  &quot;_shards&quot; : {
+    &quot;total&quot; : 95,
+    &quot;successful&quot; : 95,
+    &quot;skipped&quot; : 0,
+    &quot;failed&quot; : 0
+  },
+  &quot;hits&quot; : {
+    &quot;total&quot; : {
+      &quot;value&quot; : 10000,
+      &quot;relation&quot; : &quot;gte&quot;
+    },
+    &quot;max_score&quot; : null,
+    &quot;hits&quot; : [ ]
+  },
+  &quot;aggregations&quot; : {
+    &quot;avg_number&quot; : {
+      &quot;value&quot; : 4945.194934355102
+    }
+  }
+}
+</code></pre>
+<h1 id="组合查询">组合查询</h1>
+<pre><code>GET /nginx-access-*/_search
+{
+  &quot;size&quot;: 0,
+  &quot;aggs&quot;: {
+    &quot;avg_number_list&quot;: {
+      &quot;filter&quot;: {
+        &quot;range&quot;: {
+          &quot;source.as.number&quot;: {
+            &quot;gt&quot;: 100000,
+            &quot;lt&quot;: 200000
+          }
+        }
+      },
+      &quot;aggs&quot;: {
+        &quot;avg_number&quot;: {
+          &quot;sum&quot;: {
+            &quot;field&quot;: &quot;source.as.number&quot;
+          }
+        }
+      }
+    }
+  }
+}
+</code></pre>
+]]></content>
+    </entry>
     <entry>
         <title type="html"><![CDATA[elasticsearch 基础查询]]></title>
         <id>https://yangjunliu.github.io/post/elasticsearch-ji-chu-cha-xun/</id>

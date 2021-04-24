@@ -8,7 +8,7 @@
 <meta name="keywords" content="码农">
 <meta name="description" content="个人微博">
 <meta name="theme-color" content="#000">
-<title>elasticsearch 基础查询 | YangjunLiu</title>
+<title>elasticsearch 聚合（aggs） | YangjunLiu</title>
 <link rel="shortcut icon" href="/favicon.ico?v=1619266908487">
 <link rel="stylesheet" href="/styles/main.css">
 <link rel="stylesheet" href="/media/css/pisces.css">
@@ -29,7 +29,7 @@
 
 
 
-  <meta name="description" content="elasticsearch 基础查询" />
+  <meta name="description" content="elasticsearch 聚合（aggs）" />
   <meta name="keywords" content="" />
 </head>
 
@@ -174,7 +174,8 @@
       <div class="sidebar-body pisces" id="sidebar_body">
         
           
-            
+            <div class="post-side-meta" id="post_side_meta">
+              
 <div class="sidebar-wrapper box-shadow-wrapper bg-color">
   <div class="sidebar-item">
     <img class="site-author-image right-motion" src="/images/avatar.png"/>
@@ -221,6 +222,191 @@
 
 
 </div>
+            </div>
+            <div class="post-toc sidebar-body-active" id="post_toc" style="opacity: 1;">
+              <div class="toc-box right-motion">
+  <div class="toc-wrapper auto-number auto"
+    id="toc_wrapper">
+    <ul class="markdownIt-TOC">
+<li><a href="#%E7%BB%84%E5%90%88%E6%9F%A5%E8%AF%A2">组合查询</a></li>
+</ul>
+
+  </div>
+</div>
+
+<script>
+
+  let lastTop = 0, lList = [], hList = [], postBody, lastIndex = -1;
+  let active = 'active-show', activeClass = 'active-current';
+  let tocWrapper = document.querySelector('#toc_wrapper');
+  let tocContent = tocWrapper.children[0];
+  let autoNumber = tocWrapper && tocWrapper.classList.contains('auto-number');
+
+  function addTocNumber(elem, deep) {
+    if (!elem) {
+      return;
+    }
+    let prop = elem.__proto__;
+
+    if (prop === HTMLUListElement.prototype) {
+      for (let i = 0; i < elem.children.length; i++) {
+        addTocNumber(elem.children[i], deep + (i + 1) + '.');
+      }
+    } else if (prop === HTMLLIElement.prototype) {
+      // 保存li元素
+      if (elem.children[0].__proto__ === HTMLAnchorElement.prototype) {
+        lList.push(elem);
+      }
+      for (let i = 0; i < elem.children.length; i++) {
+        let cur = elem.children[i];
+        if (cur.__proto__ === HTMLAnchorElement.prototype) {
+          if (autoNumber) {
+            cur.text = deep + ' ' + cur.text;
+          }
+        } else if (cur.__proto__ === HTMLUListElement.prototype) {
+          addTocNumber(cur, deep);
+        }
+      }
+    }
+  }
+
+  function removeParentActiveClass() {
+    let parents = tocContent.querySelectorAll('.' + active)
+    parents.forEach(function (elem) {
+      elem.classList.remove(active);
+    });
+  }
+
+  function addActiveClass(index) {
+    if (index >= 0 && index < hList.length) {
+      lList[index].classList.add(activeClass);
+    }
+  }
+
+  function removeActiveClass(index) {
+    if (index >= 0 && index < hList.length) {
+      lList[index].classList.remove(activeClass);
+    }
+  }
+
+  function addActiveLiElemment(elem, parent) {
+    if (!elem || elem === parent) {
+      return;
+    } else {
+      if (elem.__proto__ === HTMLLIElement.prototype) {
+        elem.classList.add(active);
+      }
+      addActiveLiElemment(elem.parentElement, parent);
+    }
+  }
+
+  function showToc() {
+    if (tocWrapper) {
+      postBody = document.querySelector('#post_body');
+      for (let i = 0; i < postBody.children.length; i++) {
+        if (postBody.children[i].__proto__ === HTMLHeadingElement.prototype) {
+          hList.push(postBody.children[i]);
+        }
+      }
+      if (tocWrapper.classList.contains('compress')) {
+        tocContent.classList.add('closed');
+      } else if (tocWrapper.classList.contains('no_compress')) {
+        tocContent.classList.add('expanded');
+      } else {
+        if (hList.length > 10) {
+          active = 'active-hidden'
+          tocContent.classList.add('closed');
+        } else {
+          tocContent.classList.add('expanded');
+        }
+      }
+    }
+  }
+
+  (function () {
+    // 处理不是从#一级标题开始目录
+    if (tocContent.children.length === 1 && tocContent.children[0].__proto__ === HTMLLIElement.prototype) {
+      let con = tocContent.children[0].children[0];
+      tocContent.innerHTML = con.innerHTML;
+    }
+    let markdownItTOC = document.querySelector('.markdownIt-TOC');
+    let innerHeight = window.innerHeight;
+    markdownItTOC.style = `max-height: ${innerHeight - 80 > 0 ? innerHeight - 80 : innerHeight}px`
+    addTocNumber(tocContent, '');
+  })();
+
+  document.addEventListener('scroll', function (e) {
+    if (lList.length <= 0) {
+      return;
+    }
+    let scrollTop = document.scrollingElement.scrollTop + 10;
+    let dir;
+
+    if (lastTop - scrollTop > 0) {
+      dir = 'up';
+    } else {
+      dir = 'down';
+    }
+
+    lastTop = scrollTop;
+    if (scrollTop <= 0) {
+      if (lastIndex >= 0 && lastIndex < hList.length) {
+        lList[lastIndex].classList.remove(activeClass);
+      }
+      return;
+    }
+
+    let current = 0, hasFind = false;
+    for (let i = 0; i < hList.length; i++) {
+      if (hList[i].offsetTop > scrollTop) {
+        current = i;
+        hasFind = true;
+        break;
+      }
+    }
+    if (!hasFind && scrollTop > lList[lList.length - 1].offsetTop) {
+      current = hList.length - 1;
+    } else {
+      current--;
+    }
+    if (dir === 'down') {
+      if (current > lastIndex) {
+        addActiveClass(current);
+        removeActiveClass(lastIndex)
+        lastIndex = current;
+        removeParentActiveClass();
+        lList[current] && addActiveLiElemment(lList[current].parentElement, tocContent);
+      }
+    } else {
+      if (current < lastIndex) {
+        addActiveClass(current);
+        removeActiveClass(lastIndex);
+        lastIndex = current;
+        removeParentActiveClass();
+        lList[current] && addActiveLiElemment(lList[current].parentElement, tocContent);
+      }
+    }
+  });
+
+
+  window.addEventListener('load', function () {
+    showToc();
+    document.querySelector('#sidebar').style = 'display: block;';
+    tocWrapper.classList.add('toc-active');
+    setTimeout(function () {
+      if ("createEvent" in document) {
+        let evt = document.createEvent("HTMLEvents");
+        evt.initEvent("scroll", false, true);
+        document.dispatchEvent(evt);
+      }
+      else {
+        document.fireEvent("scroll");
+      }
+    }, 500)
+  })
+
+</script>
+            </div>
           
         
       </div>
@@ -308,8 +494,8 @@
           <div class="section bg-color post post-page">
             <header class="post-header">
   <h1 class="post-title">
-    <a class="post-title-link" href="https://yangjunliu.github.io/post/elasticsearch-ji-chu-cha-xun/">
-      elasticsearch 基础查询
+    <a class="post-title-link" href="https://yangjunliu.github.io/post/elasticsearch-ju-he-aggs/">
+      elasticsearch 聚合（aggs）
     </a>
   </h1>
   <div class="post-meta">
@@ -323,267 +509,460 @@
     
     <span class="meta-item">
       <i class="fa fa-clock-o"></i>
-      <span>6分钟</span>
+      <span>7分钟</span>
     </span>
     <span class="meta-item">
       <span class="post-meta-divider">|</span>
       <i class="fa fa-file-word-o"></i>
-      <span>1116<span class="pc-show">字数</span></span>
+      <span>1128<span class="pc-show">字数</span></span>
     </span>
     
   </div>
 </header>
             <div class="post-body next-md-body" id="post_body">
-              <p><strong>索引原理</strong><br>
-<img src="https://yangjunliu.github.io/post-images/1619240184230.png" alt="" loading="lazy"><br>
-<strong>查询类型</strong></p>
+              <p><strong>单值输出</strong></p>
 <ul>
-<li>query string: 查询的信息放到url里面<br>
-如：</li>
+<li>sum 求和</li>
 </ul>
-<pre><code># 索引前缀 nginx-access-*
-GET /nginx-access-*/_search?q=*&amp;size=2&amp;from=0
-</code></pre>
-<ul>
-<li>query DSL:将查询信息拼成json格式放到请求的body里面<br>
-如：</li>
-</ul>
-<pre><code>   # 索引前缀 nginx-access-*
-   GET /nginx-access*/_search
-   {
-       &quot;size&quot;: 2, 
-       &quot;query&quot;: {
-           &quot;match_all&quot;: {}
-       }
-   }
-</code></pre>
-<p><strong>Query String</strong><br>
-这种查询有局限性查询方式有限，不常使用。</p>
-<ul>
-<li>文档地址：<a href="https://www.elastic.co/guide/en/elasticsearch/reference/6.8/search-uri-request.html">Search API</a></li>
-<li>查询所有数据</li>
-</ul>
-<pre><code># 类似sql: select * from table
-GET /nginx-access-*/_search?q=*
-</code></pre>
-<ul>
-<li>条件查询</li>
-</ul>
-<pre><code># 类似sql：select * from table where _id = gq_xHXcB1PgNMy0OCFii
-GET /nginx-access-*/_search?q=_id:gq_xHXcB1PgNMy0OCFii
-</code></pre>
-<ul>
-<li>指定返回字段</li>
-</ul>
-<pre><code>#类似 sql：select container, agent from table
-GET /nginx-access-*/_search?q=*&amp;_source=container,agent
-</code></pre>
-<ul>
-<li>结果排序</li>
-</ul>
-<pre><code># 类似sql：select * from table order field desc
-GET /nginx-access-*/_search?q=*&amp;sort=agent.version:desc
-</code></pre>
-<ul>
-<li>结果分页</li>
-</ul>
-<pre><code># 类似sql：select * from table limit 0 10
-GET /nginx-access-*/_search?q=*&amp;from=0&amp;size=10
-</code></pre>
-<p><strong>Query DSL</strong></p>
-<ul>
-<li>文档地址 <a href="https://www.elastic.co/guide/en/elasticsearch/reference/7.12/query-dsl.html">Query DSL</a></li>
-<li>分词器
-<ol>
-<li>分词规则：根据es的分词器进行分词默认分词器是standard，text类型的字段会把每个单词进行分开，如：i am name会拆分成i，am，name三个词存在索引区。中文是把每个字进行才分，如：我是张三会拆分成 我，是，张，三把每个字存在索引区。</li>
-<li>会进行分词的数据类型：text。按分词器规则拆分后存储在索引区</li>
-<li>不会进行分词的数据类型：除text类型以外的类型，如，keyword,integer,date ...。不进行拆分直接存储在索引区。</li>
-</ol>
-</li>
-<li>查询所有数据</li>
-</ul>
-<pre><code># 类似sql: select * from table
+<pre><code># 类似sql select sum(field) frome table
 GET /nginx-access-*/_search
 {
-  &quot;query&quot;: {
-    &quot;match_all&quot;: {}
-  }
-}
-</code></pre>
-<ul>
-<li>term 关键字查询</li>
-</ul>
-<pre><code># 字段不是text类型，类似sql select * from table where field = 1
-# 字段是text类型，类似sql全文索引。根据分词器分词后的词进行匹配
-GET /nginx-access-*/_search
-{
-  &quot;query&quot;: {
-    &quot;term&quot;: {
-      &quot;agent.geotype&quot;: {
-        &quot;value&quot;: &quot;shang&quot;
+  &quot;size&quot;: 0, 
+  &quot;aggs&quot;: {
+    &quot;sum_offset&quot;: {
+      &quot;sum&quot;: {
+        &quot;field&quot;: &quot;log.offset&quot;
       }
     }
   }
 }
 </code></pre>
 <ul>
-<li>range范围查询</li>
+<li>avg 平均值</li>
 </ul>
-<pre><code># 类似 sql：select * from table where field &gt; 1 and field &lt; 10
-# 说明 gte：大于等于,gt：大于,lte：小于等于,lt：小于
+<pre><code># 类似sql select avg(field) frome table
 GET /nginx-access-*/_search
+{
+  &quot;size&quot;: 0, 
+  &quot;aggs&quot;: {
+    &quot;avg_offset&quot;: {
+      &quot;avg&quot;: {
+        &quot;field&quot;: &quot;log.offset&quot;
+      }
+    }
+  }
+}
+</code></pre>
+<ul>
+<li>max 最大值</li>
+</ul>
+<pre><code># 类似sql select max(field) frome table
+GET /nginx-access-*/_search
+{
+  &quot;size&quot;: 0,
+  &quot;aggs&quot;: {
+    &quot;field_max&quot;: {
+      &quot;max&quot;: {
+        &quot;field&quot;: &quot;log.offset&quot;
+      }
+    }
+  }
+}
+</code></pre>
+<ul>
+<li>min 最大值</li>
+</ul>
+<pre><code>  # 类似sql select min(field) frome table
+GET /nginx-access-*/_search
+{
+  &quot;size&quot;: 0,
+  &quot;aggs&quot;: {
+    &quot;field_min&quot;: {
+      &quot;min&quot;: {
+        &quot;field&quot;: &quot;log.offset&quot;
+      }
+    }
+  }
+}
+</code></pre>
+<ul>
+<li>cardinality 去重求和</li>
+</ul>
+<pre><code># 类似sql select count(distinct(field)) from table
+# 字段不能是text类型
+GET /nginx-access-*/_search
+{
+  &quot;size&quot;: 0, 
+  &quot;aggs&quot;: {
+    &quot;distinct_count&quot;: {
+      &quot;cardinality&quot;: {
+        &quot;field&quot;: &quot;source.as.number&quot;
+      }
+    }
+  }
+}
+</code></pre>
+<p><strong>多值输出</strong></p>
+<ul>
+<li>stats 计算count,min,max,avg,sum</li>
+</ul>
+<pre><code># 注 字段类型必须是数值类型 integer，float等
+GET /nginx-access-*/_search
+{
+  &quot;size&quot;: 0, 
+  &quot;aggs&quot;: {
+    &quot;num_info&quot;: {
+      &quot;stats&quot;: {
+        &quot;field&quot;: &quot;source.as.number&quot;
+      }
+    }
+  }
+}
+</code></pre>
+<pre><code>{
+  &quot;took&quot; : 38,
+  &quot;timed_out&quot; : false,
+  &quot;_shards&quot; : {
+    &quot;total&quot; : 95,
+    &quot;successful&quot; : 95,
+    &quot;skipped&quot; : 0,
+    &quot;failed&quot; : 0
+  },
+  &quot;hits&quot; : {
+    &quot;total&quot; : {
+      &quot;value&quot; : 10000,
+      &quot;relation&quot; : &quot;gte&quot;
+    },
+    &quot;max_score&quot; : null,
+    &quot;hits&quot; : [ ]
+  },
+  &quot;aggregations&quot; : {
+    &quot;num_info&quot; : {
+      &quot;count&quot; : 71263,
+      &quot;min&quot; : 25.0,
+      &quot;max&quot; : 397539.0,
+      &quot;avg&quot; : 20274.266379467605,
+      &quot;sum&quot; : 1.444805045E9
+    }
+  }
+}
+</code></pre>
+<ul>
+<li>terms 字段分组之后count</li>
+</ul>
+<pre><code># 类似sql select count(*) from tabel grep by field
+# 字段不能是text类型
+GET /nginx-access-*/_search
+{
+  &quot;size&quot;: 0, 
+  &quot;aggs&quot;: {
+    &quot;num_info&quot;: {
+      &quot;terms&quot;: {
+        &quot;field&quot;: &quot;source.as.number&quot;
+      }
+    }
+  }
+}
+</code></pre>
+<ul>
+<li>terms 嵌套</li>
+</ul>
+<pre><code>GET /nginx-access-*/_search
+{
+  &quot;size&quot;: 0, 
+  &quot;aggs&quot;: {
+    &quot;num_info&quot;: {
+      &quot;terms&quot;: {
+        &quot;field&quot;: &quot;source.as.number&quot;
+      },
+      &quot;aggs&quot;: {
+        &quot;host_name_info&quot;: {
+          &quot;terms&quot;: {
+            &quot;field&quot;: &quot;process.properties.pid&quot;
+          }
+        }
+      }
+    }
+  }
+}
+</code></pre>
+<pre><code>GET /nginx-access-*/_search
+{
+  &quot;size&quot;: 0, 
+  &quot;aggs&quot;: {
+    &quot;num_info&quot;: {
+      &quot;terms&quot;: {
+        &quot;field&quot;: &quot;source.as.number&quot;
+      },
+      &quot;aggs&quot;: {
+        &quot;host_name_info&quot;: {
+          &quot;stats&quot;: {
+            &quot;field&quot;: &quot;source.as.number&quot;
+          }
+        }
+      }
+    }
+  }
+}
+</code></pre>
+<ul>
+<li>top_hits 查出最上面的两条数据</li>
+</ul>
+<pre><code># 类似sql select * from table order by field limit 1
+GET /nginx-access-*/_search
+{
+  &quot;size&quot;: 0, 
+  &quot;aggs&quot;: {
+    &quot;number_top_two&quot;: {
+      &quot;top_hits&quot;: {
+        &quot;_source&quot;: [&quot;agent&quot;], 
+        &quot;size&quot;: 1, 
+        &quot;sort&quot;: [
+          {
+            &quot;source.as.number&quot;: {
+              &quot;order&quot;: &quot;desc&quot;
+            }
+          }
+        ]
+      }
+    }
+  }
+}
+</code></pre>
+<pre><code># 另外一种方式
+GET /nginx-access-*/_search
+{
+  &quot;_source&quot;: [&quot;source&quot;], 
+  &quot;query&quot;: {
+    &quot;match_all&quot;: {}
+  },
+  &quot;sort&quot;: [
+    {
+      &quot;source.as.number&quot;: {
+        &quot;order&quot;: &quot;desc&quot;
+      }
+    }
+  ],
+  &quot;size&quot;: 1
+}
+</code></pre>
+<ul>
+<li>range 把查询的结果按范围分组，然后count</li>
+</ul>
+<pre><code># 范围是开区间
+GET /nginx-access-*/_search
+{
+  &quot;size&quot;: 0,
+  &quot;aggs&quot;: {
+    &quot;ranges_number_info&quot;: {
+      &quot;range&quot;: {
+        &quot;field&quot;: &quot;source.as.number&quot;,
+        &quot;ranges&quot;: [
+          {
+            &quot;key&quot;: &quot;0&lt;=number&lt;200001&quot;, 
+            &quot;to&quot;: 200001
+          },
+          {
+            &quot;key&quot;: &quot;200001&lt;=number&lt;400001&quot;, 
+            &quot;to&quot;: 400001,
+            &quot;from&quot;: 200001
+          }
+        ]
+      }
+    }
+  }
+}
+</code></pre>
+<ul>
+<li>histogram 以直方图的方式查询结果</li>
+</ul>
+<pre><code># 注 field：字段名字，interval：间隔
+#    extended_bounds：区间内没有数据用0填充
+GET /nginx-access-*/_search
+{
+  &quot;size&quot;: 0,
+  &quot;aggs&quot;: {
+    &quot;ranges_number_info&quot;: {
+      &quot;histogram&quot;: {
+        &quot;field&quot;: &quot;source.as.number&quot;,
+        &quot;interval&quot;: 100000,
+        &quot;extended_bounds&quot;: {
+          &quot;min&quot;: 0,
+          &quot;max&quot;: 500000
+        }
+      }
+    }
+  }
+}
+</code></pre>
+<pre><code># 查询结果
+{
+  &quot;took&quot; : 57,
+  &quot;timed_out&quot; : false,
+  &quot;_shards&quot; : {
+    &quot;total&quot; : 95,
+    &quot;successful&quot; : 95,
+    &quot;skipped&quot; : 0,
+    &quot;failed&quot; : 0
+  },
+  &quot;hits&quot; : {
+    &quot;total&quot; : {
+      &quot;value&quot; : 10000,
+      &quot;relation&quot; : &quot;gte&quot;
+    },
+    &quot;max_score&quot; : null,
+    &quot;hits&quot; : [ ]
+  },
+  &quot;aggregations&quot; : {
+    &quot;ranges_number_info&quot; : {
+      &quot;buckets&quot; : [
+        {
+          &quot;key&quot; : 0.0,
+          &quot;doc_count&quot; : 69814
+        },
+        {
+          &quot;key&quot; : 100000.0,
+          &quot;doc_count&quot; : 503
+        },
+        {
+          &quot;key&quot; : 200000.0,
+          &quot;doc_count&quot; : 932
+        },
+        {
+          &quot;key&quot; : 300000.0,
+          &quot;doc_count&quot; : 39
+        },
+        {
+          &quot;key&quot; : 400000.0,
+          &quot;doc_count&quot; : 0
+        },
+        {
+          &quot;key&quot; : 500000.0,
+          &quot;doc_count&quot; : 0
+        }
+      ]
+    }
+  }
+}
+</code></pre>
+<ul>
+<li>筛选后聚合</li>
+</ul>
+<pre><code>GET /nginx-access-*/_search
 {
   &quot;query&quot;: {
     &quot;range&quot;: {
-      &quot;log.offset&quot;: {
-        &quot;gte&quot;: 432141,
-        &quot;lte&quot;: 432241
+      &quot;source.as.number&quot;: {
+        &quot;gt&quot;: 100000
+      }
+    }
+  },
+  &quot;aggs&quot;: {
+    &quot;avg_number&quot;: {
+      &quot;avg&quot;: {
+        &quot;field&quot;: &quot;source.as.number&quot;
+      }
+    }
+  },
+  &quot;size&quot;: 0
+}
+</code></pre>
+<pre><code># 结果
+{
+  &quot;took&quot; : 200,
+  &quot;timed_out&quot; : false,
+  &quot;_shards&quot; : {
+    &quot;total&quot; : 95,
+    &quot;successful&quot; : 95,
+    &quot;skipped&quot; : 0,
+    &quot;failed&quot; : 0
+  },
+  &quot;hits&quot; : {
+    &quot;total&quot; : {
+      &quot;value&quot; : 1474,
+      &quot;relation&quot; : &quot;eq&quot;
+    },
+    &quot;max_score&quot; : null,
+    &quot;hits&quot; : [ ]
+  },
+  &quot;aggregations&quot; : {
+    &quot;avg_number&quot; : {
+      &quot;value&quot; : 188359.7435549525
+    }
+  }
+}
+</code></pre>
+<ul>
+<li>使用filter过滤查询，然后聚合</li>
+</ul>
+<pre><code># constant_score 忽略文档排名分数
+GET /nginx-access-*/_search
+{
+  &quot;size&quot;: 0, 
+  &quot;query&quot;: {
+    &quot;constant_score&quot;: {
+      &quot;filter&quot;: {
+        &quot;term&quot;: {
+          &quot;source.geo.city_name&quot;: &quot;shanghai&quot;
+        }
+      }
+    }
+  },
+  &quot;aggs&quot;: {
+    &quot;avg_number&quot;: {
+      &quot;avg&quot;: {
+        &quot;field&quot;: &quot;source.as.number&quot;
       }
     }
   }
 }
 </code></pre>
-<ul>
-<li>prefix 前缀查询</li>
-</ul>
-<pre><code># 类似sql select * from table field like 'abc%'
-# 字段是text类型，匹配分词后的词
-GET /nginx-access-*/_search
+<pre><code># 结果
 {
-  &quot;query&quot;: {
-    &quot;prefix&quot;: {
-      &quot;source.geo.region_name&quot;: {
-        &quot;value&quot;: &quot;bei&quot;
+  &quot;took&quot; : 90,
+  &quot;timed_out&quot; : false,
+  &quot;_shards&quot; : {
+    &quot;total&quot; : 95,
+    &quot;successful&quot; : 95,
+    &quot;skipped&quot; : 0,
+    &quot;failed&quot; : 0
+  },
+  &quot;hits&quot; : {
+    &quot;total&quot; : {
+      &quot;value&quot; : 10000,
+      &quot;relation&quot; : &quot;gte&quot;
+    },
+    &quot;max_score&quot; : null,
+    &quot;hits&quot; : [ ]
+  },
+  &quot;aggregations&quot; : {
+    &quot;avg_number&quot; : {
+      &quot;value&quot; : 4945.194934355102
+    }
+  }
+}
+</code></pre>
+<h1 id="组合查询">组合查询</h1>
+<pre><code>GET /nginx-access-*/_search
+{
+  &quot;size&quot;: 0,
+  &quot;aggs&quot;: {
+    &quot;avg_number_list&quot;: {
+      &quot;filter&quot;: {
+        &quot;range&quot;: {
+          &quot;source.as.number&quot;: {
+            &quot;gt&quot;: 100000,
+            &quot;lt&quot;: 200000
+          }
+        }
+      },
+      &quot;aggs&quot;: {
+        &quot;avg_number&quot;: {
+          &quot;sum&quot;: {
+            &quot;field&quot;: &quot;source.as.number&quot;
+          }
+        }
       }
-    }
-  }
-}
-</code></pre>
-<ul>
-<li>wildcard通配符查询</li>
-</ul>
-<pre><code># 注 ?：单个字符，*：任意字符
-# 字段是text类型，匹配分词后的词
-GET /nginx-access-*/_search
-{
-  &quot;size&quot;: 2, 
-  &quot;query&quot;: {
-    &quot;wildcard&quot;: {
-      &quot;source.geo.region_name&quot;: {
-        &quot;value&quot;: &quot;bei?ing&quot;
-      }
-    }
-  }
-}
-</code></pre>
-<ul>
-<li>ids 多id查询</li>
-</ul>
-<pre><code># 类似sql：select * from table id in (1,2,3)
-GET /nginx-access-*/_search
-{
-  &quot;query&quot;: {
-    &quot;ids&quot;: {
-      &quot;values&quot;: [&quot;Pa_xHXcB1PgNMy0OFV5i&quot;, &quot;Uq_xHXcB1PgNMy0OFl_z&quot;]
-    }
-  }
-}
-</code></pre>
-<ul>
-<li>fuzzy 模糊查询，最大模糊错误是0-2个字或字母之间</li>
-</ul>
-<pre><code># 注 关键字在0-2个之间，必须全匹配
-#            2-5个之间，0-1个错误
-#            5以上，0-2个错误
-GET /nginx-access-*/_search
-{
-  &quot;size&quot;: 2, 
-  &quot;query&quot;: {
-    &quot;fuzzy&quot;: {
-      &quot;source.geo.region_name&quot;: {
-        &quot;value&quot;: &quot;beijiii&quot;
-      }
-    }
-  }
-}
-</code></pre>
-<ul>
-<li>bool 多条件查询，可以有很多种组合</li>
-</ul>
-<pre><code># 类似sql select * from table where field != 1 and where field != 2 ...
-# 注 must：&amp;&amp;，should：||，must_not：！
-GET /nginx-access-*/_search
-{
-  &quot;size&quot;: 2, 
-  &quot;query&quot;: {
-    &quot;bool&quot;: {
-      &quot;must&quot;: [
-        {
-          &quot;term&quot;: {
-            &quot;source.geo.region_name&quot;: {
-              &quot;value&quot;: &quot;beijing&quot;
-            }
-          }
-        }
-      ],
-      &quot;must_not&quot;: [
-        {
-          &quot;term&quot;: {
-            &quot;source.geo.region_name&quot;: {
-              &quot;value&quot;: &quot;shanghai&quot;
-            }
-          }
-        }
-      ]
-    }
-  }
-}
-</code></pre>
-<ul>
-<li>multi_match 多字段查询</li>
-</ul>
-<pre><code># 注 text类型字段搜索词先进行分词
-#    不需要分词的字段直接用搜索词
-#    查找，根据字段类型判断是否分词
-GET /nginx-access-*/_search
-{
-  &quot;size&quot;: 2, 
-  &quot;query&quot;: {
-    &quot;multi_match&quot;: {
-      &quot;query&quot;: &quot;beijing&quot;,
-      &quot;fields&quot;: [&quot;source.geo.city_name&quot;, &quot;source.geo.region_name&quot;]
-    }
-  }
-}
-</code></pre>
-<ul>
-<li>Filter Query 过滤查询，类似mysql查询优化器<br>
-说明：es中查询操作分为2种：查询（query）和过滤（filter）。查询即是上面的query查询，查询默认会计算每个返回文档的得分，然后根据得分进行排序。而过滤（filter）只会筛选出符合的文档，并不计算得分，而且可以缓存文档，所以过滤查询性能更快。过滤查询适合大范围筛选数据，而查询则适合精准匹配数据。一般应先使用过滤操作过滤数据，然后在使用查询匹配数据。</li>
-</ul>
-<pre><code># 不计算文档得分，不进行文档排序
-GET /nginx-access-*/_search
-{
-  &quot;query&quot;: {
-    &quot;bool&quot;: {
-      &quot;must&quot;: [
-        {
-          &quot;term&quot;: {
-            &quot;source.geo.city_name&quot;: {
-              &quot;value&quot;: &quot;beijing&quot;
-            }
-          }
-        }
-      ], 
-      &quot;filter&quot;: [
-        {
-          &quot;range&quot;: {
-            &quot;log.offset&quot;: {
-              &quot;gte&quot;: 432000,
-              &quot;lte&quot;: 433000
-            }
-          }
-        }
-      ]
     }
   }
 }
@@ -598,7 +977,7 @@ GET /nginx-access-*/_search
     </li>
     <li class="post-copyright-link">
       <strong>本文链接：</strong>
-      <a href="https://yangjunliu.github.io/post/elasticsearch-ji-chu-cha-xun/" title="elasticsearch 基础查询">https://yangjunliu.github.io/post/elasticsearch-ji-chu-cha-xun/</a>
+      <a href="https://yangjunliu.github.io/post/elasticsearch-ju-he-aggs/" title="elasticsearch 聚合（aggs）">https://yangjunliu.github.io/post/elasticsearch-ju-he-aggs/</a>
     </li>
     <li class="post-copyright-license">
       <strong>版权声明： </strong>
@@ -611,15 +990,11 @@ GET /nginx-access-*/_search
   <div class="nav">
     <div class="nav-prev">
       
-        <i class="fa fa-chevron-left"></i>
-        <a class="nav-pc-next" title="elasticsearch 聚合（aggs）" href="https://yangjunliu.github.io/post/elasticsearch-ju-he-aggs/">elasticsearch 聚合（aggs）</a class="nav-pc-next">
-        <a class="nav-mobile-prev" title="elasticsearch 聚合（aggs）" href="https://yangjunliu.github.io/post/elasticsearch-ju-he-aggs/">上一篇</a>
-      
     </div>
     <div class="nav-next">
       
-        <a class="nav-pc-next" title="filebeat收集nginx日志" href="https://yangjunliu.github.io/post/filebeat-shou-ji-nginx-ri-zhi/">filebeat收集nginx日志</a>
-        <a class="nav-mobile-next" title="filebeat收集nginx日志" href="https://yangjunliu.github.io/post/filebeat-shou-ji-nginx-ri-zhi/">下一篇</a>
+        <a class="nav-pc-next" title="elasticsearch 基础查询" href="https://yangjunliu.github.io/post/elasticsearch-ji-chu-cha-xun/">elasticsearch 基础查询</a>
+        <a class="nav-mobile-next" title="elasticsearch 基础查询" href="https://yangjunliu.github.io/post/elasticsearch-ji-chu-cha-xun/">下一篇</a>
         <i class="fa fa-chevron-right"></i>
       
     </div>
