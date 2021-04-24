@@ -1,0 +1,341 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+    <id>https://yangjunliu.github.io</id>
+    <title>YangjunLiu</title>
+    <updated>2021-04-24T06:42:59.060Z</updated>
+    <generator>https://github.com/jpmonette/feed</generator>
+    <link rel="alternate" href="https://yangjunliu.github.io"/>
+    <link rel="self" href="https://yangjunliu.github.io/atom.xml"/>
+    <subtitle>个人微博</subtitle>
+    <logo>https://yangjunliu.github.io/images/avatar.png</logo>
+    <icon>https://yangjunliu.github.io/favicon.ico</icon>
+    <rights>All rights reserved 2021, YangjunLiu</rights>
+    <entry>
+        <title type="html"><![CDATA[elasticsearch 基础查询]]></title>
+        <id>https://yangjunliu.github.io/post/elasticsearch-ji-chu-cha-xun/</id>
+        <link href="https://yangjunliu.github.io/post/elasticsearch-ji-chu-cha-xun/">
+        </link>
+        <updated>2021-04-24T02:26:58.000Z</updated>
+        <content type="html"><![CDATA[<p><strong>索引原理</strong><br>
+<img src="https://yangjunliu.github.io/post-images/1619240184230.png" alt="" loading="lazy"><br>
+<strong>查询类型</strong></p>
+<ul>
+<li>query string: 查询的信息放到url里面<br>
+如：</li>
+</ul>
+<pre><code># 索引前缀 nginx-access-*
+GET /nginx-access-*/_search?q=*&amp;size=2&amp;from=0
+</code></pre>
+<ul>
+<li>query DSL:将查询信息拼成json格式放到请求的body里面<br>
+如：</li>
+</ul>
+<pre><code>   # 索引前缀 nginx-access-*
+   GET /nginx-access*/_search
+   {
+       &quot;size&quot;: 2, 
+       &quot;query&quot;: {
+           &quot;match_all&quot;: {}
+       }
+   }
+</code></pre>
+<p><strong>Query String</strong><br>
+这种查询有局限性查询方式有限，不常使用。</p>
+<ul>
+<li>文档地址：<a href="https://www.elastic.co/guide/en/elasticsearch/reference/6.8/search-uri-request.html">Search API</a></li>
+<li>查询所有数据</li>
+</ul>
+<pre><code># 类似sql: select * from table
+GET /nginx-access-*/_search?q=*
+</code></pre>
+<ul>
+<li>条件查询</li>
+</ul>
+<pre><code># 类似sql：select * from table where _id = gq_xHXcB1PgNMy0OCFii
+GET /nginx-access-*/_search?q=_id:gq_xHXcB1PgNMy0OCFii
+</code></pre>
+<ul>
+<li>指定返回字段</li>
+</ul>
+<pre><code>#类似 sql：select container, agent from table
+GET /nginx-access-*/_search?q=*&amp;_source=container,agent
+</code></pre>
+<ul>
+<li>结果排序</li>
+</ul>
+<pre><code># 类似sql：select * from table order field desc
+GET /nginx-access-*/_search?q=*&amp;sort=agent.version:desc
+</code></pre>
+<ul>
+<li>结果分页</li>
+</ul>
+<pre><code># 类似sql：select * from table limit 0 10
+GET /nginx-access-*/_search?q=*&amp;from=0&amp;size=10
+</code></pre>
+<p><strong>Query DSL</strong></p>
+<ul>
+<li>文档地址 <a href="https://www.elastic.co/guide/en/elasticsearch/reference/7.12/query-dsl.html">Query DSL</a></li>
+<li>分词器
+<ol>
+<li>分词规则：根据es的分词器进行分词默认分词器是standard，text类型的字段会把每个单词进行分开，如：i am name会拆分成i，am，name三个词存在索引区。中文是把每个字进行才分，如：我是张三会拆分成 我，是，张，三把每个字存在索引区。</li>
+<li>会进行分词的数据类型：text。按分词器规则拆分后存储在索引区</li>
+<li>不会进行分词的数据类型：除text类型以外的类型，如，keyword,integer,date ...。不进行拆分直接存储在索引区。</li>
+</ol>
+</li>
+<li>查询所有数据</li>
+</ul>
+<pre><code># 类似sql: select * from table
+GET /nginx-access-*/_search
+{
+  &quot;query&quot;: {
+    &quot;match_all&quot;: {}
+  }
+}
+</code></pre>
+<ul>
+<li>term 关键字查询</li>
+</ul>
+<pre><code># 字段不是text类型，类似sql select * from table where field = 1
+# 字段是text类型，类似sql全文索引。根据分词器分词后的词进行匹配
+GET /nginx-access-*/_search
+{
+  &quot;query&quot;: {
+    &quot;term&quot;: {
+      &quot;agent.geotype&quot;: {
+        &quot;value&quot;: &quot;shang&quot;
+      }
+    }
+  }
+}
+</code></pre>
+<ul>
+<li>range范围查询</li>
+</ul>
+<pre><code># 类似 sql：select * from table where field &gt; 1 and field &lt; 10
+# 说明 gte：大于等于,gt：大于,lte：小于等于,lt：小于
+GET /nginx-access-*/_search
+{
+  &quot;query&quot;: {
+    &quot;range&quot;: {
+      &quot;log.offset&quot;: {
+        &quot;gte&quot;: 432141,
+        &quot;lte&quot;: 432241
+      }
+    }
+  }
+}
+</code></pre>
+<ul>
+<li>prefix 前缀查询</li>
+</ul>
+<pre><code># 类似sql select * from table field like 'abc%'
+# 字段是text类型，匹配分词后的词
+GET /nginx-access-*/_search
+{
+  &quot;query&quot;: {
+    &quot;prefix&quot;: {
+      &quot;source.geo.region_name&quot;: {
+        &quot;value&quot;: &quot;bei&quot;
+      }
+    }
+  }
+}
+</code></pre>
+<ul>
+<li>wildcard通配符查询</li>
+</ul>
+<pre><code># 注 ?：单个字符，*：任意字符
+# 字段是text类型，匹配分词后的词
+GET /nginx-access-*/_search
+{
+  &quot;size&quot;: 2, 
+  &quot;query&quot;: {
+    &quot;wildcard&quot;: {
+      &quot;source.geo.region_name&quot;: {
+        &quot;value&quot;: &quot;bei?ing&quot;
+      }
+    }
+  }
+}
+</code></pre>
+<ul>
+<li>ids 多id查询</li>
+</ul>
+<pre><code># 类似sql：select * from table id in (1,2,3)
+GET /nginx-access-*/_search
+{
+  &quot;query&quot;: {
+    &quot;ids&quot;: {
+      &quot;values&quot;: [&quot;Pa_xHXcB1PgNMy0OFV5i&quot;, &quot;Uq_xHXcB1PgNMy0OFl_z&quot;]
+    }
+  }
+}
+</code></pre>
+<ul>
+<li>fuzzy 模糊查询，最大模糊错误是0-2个字或字母之间</li>
+</ul>
+<pre><code># 注 关键字在0-2个之间，必须全匹配
+#            2-5个之间，0-1个错误
+#            5以上，0-2个错误
+GET /nginx-access-*/_search
+{
+  &quot;size&quot;: 2, 
+  &quot;query&quot;: {
+    &quot;fuzzy&quot;: {
+      &quot;source.geo.region_name&quot;: {
+        &quot;value&quot;: &quot;beijiii&quot;
+      }
+    }
+  }
+}
+</code></pre>
+<ul>
+<li>bool 多条件查询，可以有很多种组合</li>
+</ul>
+<pre><code># 类似sql select * from table where field != 1 and where field != 2 ...
+# 注 must：&amp;&amp;，should：||，must_not：！
+GET /nginx-access-*/_search
+{
+  &quot;size&quot;: 2, 
+  &quot;query&quot;: {
+    &quot;bool&quot;: {
+      &quot;must&quot;: [
+        {
+          &quot;term&quot;: {
+            &quot;source.geo.region_name&quot;: {
+              &quot;value&quot;: &quot;beijing&quot;
+            }
+          }
+        }
+      ],
+      &quot;must_not&quot;: [
+        {
+          &quot;term&quot;: {
+            &quot;source.geo.region_name&quot;: {
+              &quot;value&quot;: &quot;shanghai&quot;
+            }
+          }
+        }
+      ]
+    }
+  }
+}
+</code></pre>
+<ul>
+<li>multi_match 多字段查询</li>
+</ul>
+<pre><code># 注 text类型字段搜索词先进行分词
+#    不需要分词的字段直接用搜索词
+#    查找，根据字段类型判断是否分词
+GET /nginx-access-*/_search
+{
+  &quot;size&quot;: 2, 
+  &quot;query&quot;: {
+    &quot;multi_match&quot;: {
+      &quot;query&quot;: &quot;beijing&quot;,
+      &quot;fields&quot;: [&quot;source.geo.city_name&quot;, &quot;source.geo.region_name&quot;]
+    }
+  }
+}
+</code></pre>
+<ul>
+<li>Filter Query 过滤查询，类似mysql查询优化器<br>
+说明：es中查询操作分为2种：查询（query）和过滤（filter）。查询即是上面的query查询，查询默认会计算每个返回文档的得分，然后根据得分进行排序。而过滤（filter）只会筛选出符合的文档，并不计算得分，而且可以缓存文档，所以过滤查询性能更快。过滤查询适合大范围筛选数据，而查询则适合精准匹配数据。一般应先使用过滤操作过滤数据，然后在使用查询匹配数据。</li>
+</ul>
+<pre><code># 不计算文档得分，不进行文档排序
+GET /nginx-access-*/_search
+{
+  &quot;query&quot;: {
+    &quot;bool&quot;: {
+      &quot;must&quot;: [
+        {
+          &quot;term&quot;: {
+            &quot;source.geo.city_name&quot;: {
+              &quot;value&quot;: &quot;beijing&quot;
+            }
+          }
+        }
+      ], 
+      &quot;filter&quot;: [
+        {
+          &quot;range&quot;: {
+            &quot;log.offset&quot;: {
+              &quot;gte&quot;: 432000,
+              &quot;lte&quot;: 433000
+            }
+          }
+        }
+      ]
+    }
+  }
+}
+</code></pre>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[filebeat收集nginx日志]]></title>
+        <id>https://yangjunliu.github.io/post/filebeat-shou-ji-nginx-ri-zhi/</id>
+        <link href="https://yangjunliu.github.io/post/filebeat-shou-ji-nginx-ri-zhi/">
+        </link>
+        <updated>2021-01-18T06:16:08.000Z</updated>
+        <content type="html"><![CDATA[<p>轻量型日志采集器，无论您是从安全设备、云、容器、主机还是 OT 进行数据收集，Filebeat 都将为您提供一种轻量型方法，用于转发和汇总日志与文件，让简单的事情不再繁杂。</p>
+<ol>
+<li>下载地址：https://artifacts.elastic.co/downloads/beats/filebeat/filebeat-7.10.2-x86_64.rpm</li>
+<li>执行命令：[biubiu@VM_0_7_centos src]$ sudo rpm -ihv filebeat-7.10.2-x86_64.rpm</li>
+<li>查看配置文件：[biubiu@VM_0_7_centos src]$ rpm -qc filebeat<img src="https://yangjunliu.github.io/post-images/1610958413766.png" alt="" loading="lazy"></li>
+<li>开启nginx模块：<br>
+[biubiu@VM_0_7_centos modules.d]$ cd /etc/filebeat/modules.d/<br>
+[biubiu@VM_0_7_centos modules.d]$ sudo filebeat modules enable nginx</li>
+<li>查看已开启的模块：<br>
+[biubiu@VM_0_7_centos modules.d]$ sudo filebeat modules list<br>
+<img src="https://yangjunliu.github.io/post-images/1610958665990.png" alt="" loading="lazy"></li>
+<li>修改2个配置文件<br>
+[biubiu@VM_0_7_centos modules.d]$ sudo egrep -v &quot;<sup> *#|</sup>$&quot; /etc/filebeat/modules.d/nginx.yml</li>
+</ol>
+<pre><code>- module: nginx
+  access:
+    enabled: true
+    var.paths: [&quot;/usr/local/nginx/logs/test.access.log&quot;]
+  error:
+    enabled: true
+    var.paths: [&quot;/usr/local/nginx/logs/test.error.log&quot;]
+  ingress_controller:
+    enabled: false
+</code></pre>
+<p>[biubiu@VM_0_7_centos modules.d]$ sudo egrep -v &quot;<sup> *#|</sup>$&quot; /etc/filebeat/filebeat.yml</p>
+<pre><code>filebeat.config.modules:
+  path: ${path.config}/modules.d/*.yml
+output.elasticsearch:
+  hosts: [&quot;localhost:9200&quot;] # es 服务地址
+  indices:
+    - index: &quot;nginx-access-%{[agent.version]}-%{+yyyy.MM.dd}&quot;
+      when.contains:
+        fileset.name: &quot;access&quot;
+    - index: &quot;nginx-error-%{[agent.version]}-%{+yyyy.MM.dd}&quot;
+      when.contains:
+        fileset.name: &quot;error&quot;
+    - index: &quot;laravel-log-%{[agent.version]}-%{+yyyy.MM.dd}&quot;
+      when.contains:
+        tags: &quot;laravel-log&quot;
+  username: &quot;elastic&quot;
+  password: &quot;changepasswd&quot;
+setup.ilm.enabled: false
+setup.template.enabled: false
+setup.template.name: &quot;nginx&quot;
+setup.template.pattern: &quot;nginx-*&quot;
+setup.template.overwrite: true
+processors:
+  - add_host_metadata:
+      when.not.contains.tags: forwarded
+  - add_cloud_metadata: ~
+  - add_docker_metadata: ~
+  - add_kubernetes_metadata: ~
+</code></pre>
+<ol start="7">
+<li>启动filebeat：<br>
+[biubiu@VM_0_7_centos modules.d]$ sudo systemctl start filebeat<br>
+<img src="https://yangjunliu.github.io/post-images/1610960815178.png" alt="" loading="lazy"></li>
+</ol>
+]]></content>
+    </entry>
+</feed>
