@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://yangjunliu.github.io</id>
     <title>YangjunLiu</title>
-    <updated>2021-04-24T12:21:54.469Z</updated>
+    <updated>2021-05-16T12:13:19.959Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://yangjunliu.github.io"/>
     <link rel="self" href="https://yangjunliu.github.io/atom.xml"/>
@@ -10,6 +10,110 @@
     <logo>https://yangjunliu.github.io/images/avatar.png</logo>
     <icon>https://yangjunliu.github.io/favicon.ico</icon>
     <rights>All rights reserved 2021, YangjunLiu</rights>
+    <entry>
+        <title type="html"><![CDATA[zookeeper 安装（单机）]]></title>
+        <id>https://yangjunliu.github.io/post/zookeeper-an-zhuang/</id>
+        <link href="https://yangjunliu.github.io/post/zookeeper-an-zhuang/">
+        </link>
+        <updated>2021-05-16T11:13:12.000Z</updated>
+        <content type="html"><![CDATA[<p><strong>下载</strong></p>
+<ul>
+<li>
+<p>官网首页<br>
+https://zookeeper.apache.org/</p>
+</li>
+<li>
+<p>下载地址：选择合适的版本下载即可<br>
+<img src="https://yangjunliu.github.io/post-images/1621163818089.png" alt="" loading="lazy"><br>
+<img src="https://yangjunliu.github.io/post-images/1621163870707.png" alt="" loading="lazy"><br>
+<img src="https://yangjunliu.github.io/post-images/1621163977130.png" alt="" loading="lazy"><br>
+<strong>安装</strong></p>
+</li>
+<li>
+<p>安装准备</p>
+<ol>
+<li>安装jdk（确认jdk是否安装）</li>
+<li>创建目录<br>
+[biubiu@localhost src]$ sudo mkdir -p /opt/module/</li>
+<li>解压到指定目录<br>
+[biubiu@localhost src]$ sudo tar -zxvf apache-zookeeper-3.6.3-bin.tar.gz -C /opt/module/</li>
+</ol>
+</li>
+<li>
+<p>修改配置文件</p>
+<ol>
+<li>将/opt/module/apache-zookeeper-3.6.3-bin/conf 这个路径下的 zoo_sample.cfg 修改为 zoo.cfg<br>
+[biubiu@localhost conf]$ mv zoo_sample.cfg zoo.cfg</li>
+<li>打开 zoo.cfg 文件，修改 dataDir 路径<br>
+[biubiu@localhost conf]$ vim zoo.cfg<br>
+修改如下内容：<br>
+dataDir=/opt/module/apache-zookeeper-3.6.3-bin/zkData</li>
+<li>在/opt/module/apache-zookeeper-3.6.3-bin/这个目录上创建 zkData 文件夹<br>
+[biubiu@localhost apache-zookeeper-3.6.3-bin]$ sudo mkdir zkData</li>
+</ol>
+</li>
+<li>
+<p>操作zookeeper</p>
+<ol>
+<li>启动<br>
+[biubiu@localhost apache-zookeeper-3.6.3-bin]$ sudo bin/zkServer.sh start</li>
+<li>如果出现JAVA_HOME路径不存在的错误。启动正常跳过步骤 3<br>
+<img src="https://yangjunliu.github.io/post-images/1621165636223.png" alt="" loading="lazy"></li>
+<li>确认jdk是否正确安装，路径是否配置。如果还是不行，如下解决：<br>
+查看jdk路径：[biubiu@localhost apache-zookeeper-3.6.3-bin]$ export<br>
+<img src="https://yangjunliu.github.io/post-images/1621166096529.png" alt="" loading="lazy"><br>
+编辑bin/zkEnv.sh文件<br>
+[biubiu@localhost apache-zookeeper-3.6.3-bin]$ vim bin/zkEnv.sh<br>
+添加jdk的path<br>
+<img src="https://yangjunliu.github.io/post-images/1621166338568.png" alt="" loading="lazy"></li>
+<li>查看进程是否启动<br>
+<img src="https://yangjunliu.github.io/post-images/1621166748668.png" alt="" loading="lazy"></li>
+<li>查看状态<br>
+[biubiu@localhost apache-zookeeper-3.6.3-bin]$ sudo bin/zkServer.sh status<br>
+<img src="https://yangjunliu.github.io/post-images/1621166878109.png" alt="" loading="lazy"></li>
+<li>启动客户端<br>
+[biubiu@localhost apache-zookeeper-3.6.3-bin]$ sudo bin/zkCli.sh<br>
+<img src="https://yangjunliu.github.io/post-images/1621167061972.png" alt="" loading="lazy"></li>
+<li>退出<br>
+[zk: localhost:2181(CONNECTED) 2] quit</li>
+<li>单机zookeeper 安装完成</li>
+</ol>
+</li>
+</ul>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[jdk1.8 安装]]></title>
+        <id>https://yangjunliu.github.io/post/jdk18-an-zhuang/</id>
+        <link href="https://yangjunliu.github.io/post/jdk18-an-zhuang/">
+        </link>
+        <updated>2021-05-16T10:51:11.000Z</updated>
+        <content type="html"><![CDATA[<p><strong>下载jdk</strong></p>
+<ul>
+<li>下载页面：https://www.oracle.com/java/technologies/javase/javase-jdk8-downloads.html</li>
+<li>根据相应的提示下载<br>
+<img src="https://yangjunliu.github.io/post-images/1621162579536.png" alt="" loading="lazy"></li>
+</ul>
+<p><strong>安装</strong></p>
+<ul>
+<li>创建java文件目录<br>
+[biubiu@localhost src]$ sudo mkdir -p /usr/local/java</li>
+<li>解压到java文件目录<br>
+[biubiu@localhost src]$ sudo tar -vzxf jdk-8u291-linux-x64.tar.gz -C /usr/local/java/</li>
+<li>添加环境变量<br>
+[biubiu@localhost src]$ sudo vim /etc/profile<pre><code>export JAVA_HOME=/usr/local/java/jdk1.8.0_291 #根据机器目录修改
+export CLASSPATH=$CLASSPATH:$JAVA_HOME/lib/
+export PATH=$PATH:$JAVA_HOME/bin
+</code></pre>
+</li>
+<li>从新加载配置文件<br>
+[biubiu@localhost jdk1.8.0_291]$ source /etc/profile</li>
+<li>测试，安装成功会出下面提示<br>
+[biubiu@localhost jdk1.8.0_291]$ java -version<br>
+<img src="https://yangjunliu.github.io/post-images/1621163355839.png" alt="" loading="lazy"></li>
+</ul>
+]]></content>
+    </entry>
     <entry>
         <title type="html"><![CDATA[elasticsearch 聚合（aggs）]]></title>
         <id>https://yangjunliu.github.io/post/elasticsearch-ju-he-aggs/</id>
