@@ -1,19 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
-    <id>https://yangjunliu.github.io</id>
+    <id>http://yangjunliu.github.io</id>
     <title>YangjunLiu</title>
-    <updated>2021-05-16T12:48:23.271Z</updated>
+    <updated>2021-05-16T12:49:45.920Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
-    <link rel="alternate" href="https://yangjunliu.github.io"/>
-    <link rel="self" href="https://yangjunliu.github.io/atom.xml"/>
+    <link rel="alternate" href="http://yangjunliu.github.io"/>
+    <link rel="self" href="http://yangjunliu.github.io/atom.xml"/>
     <subtitle>个人微博</subtitle>
-    <logo>https://yangjunliu.github.io/images/avatar.png</logo>
-    <icon>https://yangjunliu.github.io/favicon.ico</icon>
+    <logo>http://yangjunliu.github.io/images/avatar.png</logo>
+    <icon>http://yangjunliu.github.io/favicon.ico</icon>
     <rights>All rights reserved 2021, YangjunLiu</rights>
     <entry>
         <title type="html"><![CDATA[zookeeper 安装（单机）]]></title>
-        <id>https://yangjunliu.github.io/post/zookeeper-an-zhuang/</id>
-        <link href="https://yangjunliu.github.io/post/zookeeper-an-zhuang/">
+        <id>http://yangjunliu.github.io/post/zookeeper-an-zhuang/</id>
+        <link href="http://yangjunliu.github.io/post/zookeeper-an-zhuang/">
         </link>
         <updated>2021-05-16T11:13:12.000Z</updated>
         <content type="html"><![CDATA[<p><strong>下载</strong></p>
@@ -24,9 +24,9 @@ https://zookeeper.apache.org/</p>
 </li>
 <li>
 <p>下载地址：选择合适的版本下载即可<br>
-<img src="https://yangjunliu.github.io/post-images/1621163818089.png" alt="" loading="lazy"><br>
-<img src="https://yangjunliu.github.io/post-images/1621163870707.png" alt="" loading="lazy"><br>
-<img src="https://yangjunliu.github.io/post-images/1621163977130.png" alt="" loading="lazy"><br>
+<img src="http://yangjunliu.github.io/post-images/1621163818089.png" alt="" loading="lazy"><br>
+<img src="http://yangjunliu.github.io/post-images/1621163870707.png" alt="" loading="lazy"><br>
+<img src="http://yangjunliu.github.io/post-images/1621163977130.png" alt="" loading="lazy"><br>
 <strong>安装</strong></p>
 </li>
 <li>
@@ -58,22 +58,22 @@ dataDir=/opt/module/apache-zookeeper-3.6.3-bin/zkData</li>
 <li>启动<br>
 [biubiu@localhost apache-zookeeper-3.6.3-bin]$ sudo bin/zkServer.sh start</li>
 <li>如果出现JAVA_HOME路径不存在的错误。启动正常跳过步骤 3<br>
-<img src="https://yangjunliu.github.io/post-images/1621165636223.png" alt="" loading="lazy"></li>
+<img src="http://yangjunliu.github.io/post-images/1621165636223.png" alt="" loading="lazy"></li>
 <li>确认jdk是否正确安装，路径是否配置。如果还是不行，如下解决：<br>
 查看jdk路径：[biubiu@localhost apache-zookeeper-3.6.3-bin]$ export<br>
-<img src="https://yangjunliu.github.io/post-images/1621166096529.png" alt="" loading="lazy"><br>
+<img src="http://yangjunliu.github.io/post-images/1621166096529.png" alt="" loading="lazy"><br>
 编辑bin/zkEnv.sh文件<br>
 [biubiu@localhost apache-zookeeper-3.6.3-bin]$ vim bin/zkEnv.sh<br>
 添加jdk的path<br>
-<img src="https://yangjunliu.github.io/post-images/1621166338568.png" alt="" loading="lazy"></li>
+<img src="http://yangjunliu.github.io/post-images/1621166338568.png" alt="" loading="lazy"></li>
 <li>查看进程是否启动<br>
-<img src="https://yangjunliu.github.io/post-images/1621166748668.png" alt="" loading="lazy"></li>
+<img src="http://yangjunliu.github.io/post-images/1621166748668.png" alt="" loading="lazy"></li>
 <li>查看状态<br>
 [biubiu@localhost apache-zookeeper-3.6.3-bin]$ sudo bin/zkServer.sh status<br>
-<img src="https://yangjunliu.github.io/post-images/1621166878109.png" alt="" loading="lazy"></li>
+<img src="http://yangjunliu.github.io/post-images/1621166878109.png" alt="" loading="lazy"></li>
 <li>启动客户端<br>
 [biubiu@localhost apache-zookeeper-3.6.3-bin]$ sudo bin/zkCli.sh<br>
-<img src="https://yangjunliu.github.io/post-images/1621167061972.png" alt="" loading="lazy"></li>
+<img src="http://yangjunliu.github.io/post-images/1621167061972.png" alt="" loading="lazy"></li>
 <li>退出<br>
 [zk: localhost:2181(CONNECTED) 2] quit</li>
 <li>单机zookeeper 安装完成</li>
@@ -84,15 +84,15 @@ dataDir=/opt/module/apache-zookeeper-3.6.3-bin/zkData</li>
     </entry>
     <entry>
         <title type="html"><![CDATA[jdk1.8 安装]]></title>
-        <id>https://yangjunliu.github.io/post/jdk18-an-zhuang/</id>
-        <link href="https://yangjunliu.github.io/post/jdk18-an-zhuang/">
+        <id>http://yangjunliu.github.io/post/jdk18-an-zhuang/</id>
+        <link href="http://yangjunliu.github.io/post/jdk18-an-zhuang/">
         </link>
         <updated>2021-05-16T10:51:11.000Z</updated>
         <content type="html"><![CDATA[<p><strong>下载jdk</strong></p>
 <ul>
 <li>下载页面：https://www.oracle.com/java/technologies/javase/javase-jdk8-downloads.html</li>
 <li>根据相应的提示下载<br>
-<img src="https://yangjunliu.github.io/post-images/1621162579536.png" alt="" loading="lazy"></li>
+<img src="http://yangjunliu.github.io/post-images/1621162579536.png" alt="" loading="lazy"></li>
 </ul>
 <p><strong>安装</strong></p>
 <ul>
@@ -110,14 +110,14 @@ export PATH=$PATH:$JAVA_HOME/bin
 [biubiu@localhost jdk1.8.0_291]$ source /etc/profile</li>
 <li>测试，安装成功会出下面提示<br>
 [biubiu@localhost jdk1.8.0_291]$ java -version<br>
-<img src="https://yangjunliu.github.io/post-images/1621163355839.png" alt="" loading="lazy"></li>
+<img src="http://yangjunliu.github.io/post-images/1621163355839.png" alt="" loading="lazy"></li>
 </ul>
 ]]></content>
     </entry>
     <entry>
         <title type="html"><![CDATA[elasticsearch 聚合（aggs）]]></title>
-        <id>https://yangjunliu.github.io/post/elasticsearch-ju-he-aggs/</id>
-        <link href="https://yangjunliu.github.io/post/elasticsearch-ju-he-aggs/">
+        <id>http://yangjunliu.github.io/post/elasticsearch-ju-he-aggs/</id>
+        <link href="http://yangjunliu.github.io/post/elasticsearch-ju-he-aggs/">
         </link>
         <updated>2021-04-24T08:42:25.000Z</updated>
         <content type="html"><![CDATA[<p><strong>单值输出</strong></p>
@@ -571,12 +571,12 @@ GET /nginx-access-*/_search
     </entry>
     <entry>
         <title type="html"><![CDATA[elasticsearch 基础查询]]></title>
-        <id>https://yangjunliu.github.io/post/elasticsearch-ji-chu-cha-xun/</id>
-        <link href="https://yangjunliu.github.io/post/elasticsearch-ji-chu-cha-xun/">
+        <id>http://yangjunliu.github.io/post/elasticsearch-ji-chu-cha-xun/</id>
+        <link href="http://yangjunliu.github.io/post/elasticsearch-ji-chu-cha-xun/">
         </link>
         <updated>2021-04-24T02:26:58.000Z</updated>
         <content type="html"><![CDATA[<p><strong>索引原理</strong><br>
-<img src="https://yangjunliu.github.io/post-images/1619240184230.png" alt="" loading="lazy"><br>
+<img src="http://yangjunliu.github.io/post-images/1619240184230.png" alt="" loading="lazy"><br>
 <strong>查询类型</strong></p>
 <ul>
 <li>query string: 查询的信息放到url里面<br>
@@ -833,21 +833,21 @@ GET /nginx-access-*/_search
     </entry>
     <entry>
         <title type="html"><![CDATA[filebeat收集nginx日志]]></title>
-        <id>https://yangjunliu.github.io/post/filebeat-shou-ji-nginx-ri-zhi/</id>
-        <link href="https://yangjunliu.github.io/post/filebeat-shou-ji-nginx-ri-zhi/">
+        <id>http://yangjunliu.github.io/post/filebeat-shou-ji-nginx-ri-zhi/</id>
+        <link href="http://yangjunliu.github.io/post/filebeat-shou-ji-nginx-ri-zhi/">
         </link>
         <updated>2021-01-18T06:16:08.000Z</updated>
         <content type="html"><![CDATA[<p>轻量型日志采集器，无论您是从安全设备、云、容器、主机还是 OT 进行数据收集，Filebeat 都将为您提供一种轻量型方法，用于转发和汇总日志与文件，让简单的事情不再繁杂。</p>
 <ol>
 <li>下载地址：https://artifacts.elastic.co/downloads/beats/filebeat/filebeat-7.10.2-x86_64.rpm</li>
 <li>执行命令：[biubiu@VM_0_7_centos src]$ sudo rpm -ihv filebeat-7.10.2-x86_64.rpm</li>
-<li>查看配置文件：[biubiu@VM_0_7_centos src]$ rpm -qc filebeat<img src="https://yangjunliu.github.io/post-images/1610958413766.png" alt="" loading="lazy"></li>
+<li>查看配置文件：[biubiu@VM_0_7_centos src]$ rpm -qc filebeat<img src="http://yangjunliu.github.io/post-images/1610958413766.png" alt="" loading="lazy"></li>
 <li>开启nginx模块：<br>
 [biubiu@VM_0_7_centos modules.d]$ cd /etc/filebeat/modules.d/<br>
 [biubiu@VM_0_7_centos modules.d]$ sudo filebeat modules enable nginx</li>
 <li>查看已开启的模块：<br>
 [biubiu@VM_0_7_centos modules.d]$ sudo filebeat modules list<br>
-<img src="https://yangjunliu.github.io/post-images/1610958665990.png" alt="" loading="lazy"></li>
+<img src="http://yangjunliu.github.io/post-images/1610958665990.png" alt="" loading="lazy"></li>
 <li>修改2个配置文件<br>
 [biubiu@VM_0_7_centos modules.d]$ sudo egrep -v &quot;<sup> *#|</sup>$&quot; /etc/filebeat/modules.d/nginx.yml</li>
 </ol>
@@ -893,7 +893,7 @@ processors:
 <ol start="7">
 <li>启动filebeat：<br>
 [biubiu@VM_0_7_centos modules.d]$ sudo systemctl start filebeat<br>
-<img src="https://yangjunliu.github.io/post-images/1610960815178.png" alt="" loading="lazy"></li>
+<img src="http://yangjunliu.github.io/post-images/1610960815178.png" alt="" loading="lazy"></li>
 </ol>
 ]]></content>
     </entry>
